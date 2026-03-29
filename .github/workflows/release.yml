@@ -1,0 +1,62 @@
+name: release-build
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+            asset_name: discord-poke-linux-amd64
+          - goos: darwin
+            goarch: arm64
+            asset_name: discord-poke-darwin-arm64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+
+      - name: Setup Go
+        uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
+        with:
+          go-version-file: go.mod
+
+      - name: Build binary
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: 0
+        run: |
+          mkdir -p dist
+          go build -trimpath -ldflags="-s -w" -o "dist/${{ matrix.asset_name }}" .
+          cd dist
+          sha256sum "${{ matrix.asset_name }}" > "${{ matrix.asset_name }}.sha256"
+          cd ..
+
+      - name: Verify binary
+        run: |
+          file "dist/${{ matrix.asset_name }}"
+          chmod +x "dist/${{ matrix.asset_name }}"
+          cd dist
+          sha256sum -c "${{ matrix.asset_name }}.sha256"
+          cd ..
+
+      - name: Upload release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "${{ github.event.release.tag_name }}" \
+            "dist/${{ matrix.asset_name }}" \
+            "dist/${{ matrix.asset_name }}.sha256" \
+            --repo "${{ github.repository }}" \
+            --clobber

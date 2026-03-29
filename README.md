@@ -58,6 +58,21 @@ go run . \
   - webhook が元々紐づいている channel が、指定した `<id>` と一致するかを検証するための指定です
   - 一致しない場合は **失敗扱い** になり、投稿しません
 
+## Release builds
+
+GitHub Release を publish すると、GitHub Actions で次のバイナリをビルドして release asset に添付します。
+
+- `discord-poke-linux-amd64`
+- `discord-poke-linux-amd64.sha256`
+- `discord-poke-darwin-arm64`
+- `discord-poke-darwin-arm64.sha256`
+
+トリガー:
+- GitHub Release の `published`
+
+workflow:
+- `.github/workflows/release.yml`
+
 ## 備考
 
 - Webhook 方式なので、**新規 thread 作成**はしません
