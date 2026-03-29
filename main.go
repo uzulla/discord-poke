@@ -154,7 +154,15 @@ func postWebhook(webhookURL string, payload webhookPayload) (*http.Response, err
 	if err != nil {
 		return nil, fmt.Errorf("marshal payload: %w", err)
 	}
-	res, err := http.Post(webhookURL, "application/json", bytes.NewReader(data))
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	req, err := http.NewRequest(http.MethodPost, webhookURL, bytes.NewReader(data))
+	if err != nil {
+		return nil, fmt.Errorf("build request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	res, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("post webhook: %w", err)
 	}
