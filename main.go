@@ -37,6 +37,25 @@ func main() {
 	var senderName string
 	var dryRun bool
 
+	flag.Usage = func() {
+		out := flag.CommandLine.Output()
+		fmt.Fprintf(out, "Usage of %s:\n", os.Args[0])
+		flag.PrintDefaults()
+		fmt.Fprintln(out, "")
+		fmt.Fprintln(out, "Environment:")
+		fmt.Fprintln(out, "  DISCORD_WEBHOOK_URL   required Discord Incoming Webhook URL")
+		fmt.Fprintln(out, "")
+		fmt.Fprintln(out, "Target semantics:")
+		fmt.Fprintln(out, "  discord-thread:<id>   post into the specified existing Discord thread")
+		fmt.Fprintln(out, "  discord-channel:<id>  validate that the webhook belongs to the specified channel")
+		fmt.Fprintln(out, "                        (this does not switch the webhook destination channel)")
+		fmt.Fprintln(out, "")
+		fmt.Fprintln(out, "Examples:")
+		fmt.Fprintln(out, "  export DISCORD_WEBHOOK_URL=\"https://discord.com/api/webhooks/...\"")
+		fmt.Fprintln(out, "  discord-poke -target discord-thread:123456789012345678 -message \"進捗どうですか？\"")
+		fmt.Fprintln(out, "  discord-poke -target discord-channel:123456789012345678 -message \"hello\"")
+	}
+
 	flag.StringVar(&targetArg, "target", "", "target in the form discord-channel:<id> or discord-thread:<id>")
 	flag.StringVar(&message, "message", "", "message body to post")
 	flag.StringVar(&senderName, "sender-name", "", "optional sender name shown in webhook post")
