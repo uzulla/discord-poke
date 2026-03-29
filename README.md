@@ -63,7 +63,9 @@ go run . \
 GitHub Release を publish すると、GitHub Actions で次のバイナリをビルドして release asset に添付します。
 
 - `discord-poke-linux-amd64`
+- `discord-poke-linux-amd64.sha256`
 - `discord-poke-darwin-arm64`
+- `discord-poke-darwin-arm64.sha256`
 
 トリガー:
 - GitHub Release の `published`
