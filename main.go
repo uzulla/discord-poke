@@ -88,7 +88,10 @@ func run(targetArg, message, senderName string, dryRun bool) error {
 	}
 	defer res.Body.Close()
 
-	body, _ := io.ReadAll(io.LimitReader(res.Body, 16*1024))
+	body, err := io.ReadAll(io.LimitReader(res.Body, 16*1024))
+	if err != nil {
+		return fmt.Errorf("read response body: %w", err)
+	}
 	if res.StatusCode < 200 || res.StatusCode >= 300 {
 		return fmt.Errorf("discord webhook returned %s: %s", res.Status, strings.TrimSpace(string(body)))
 	}
@@ -126,6 +129,11 @@ func parseTarget(v string) (target, error) {
 	id := strings.TrimSpace(parts[1])
 	if id == "" {
 		return target{}, fmt.Errorf("invalid target %q: missing id", v)
+	}
+	for _, r := range id {
+		if r < '0' || r > '9' {
+			return target{}, fmt.Errorf("invalid target %q: id must be numeric", v)
+		}
 	}
 	switch kind {
 	case "discord-channel", "discord-thread":
