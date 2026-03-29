@@ -23,10 +23,16 @@ export DISCORD_WEBHOOK_URL="https://discord.com/api/webhooks/..."
 
 `-h` / `--help` では、必須環境変数 `DISCORD_WEBHOOK_URL` と target の意味、実行例も表示されます。
 
+### ローカルでビルドして使う
+
+```bash
+go build -o discord-poke .
+```
+
 ### channel を検証して投稿
 
 ```bash
-go run . \
+./discord-poke \
   --target discord-channel:1485530659924611102 \
   --message "hello"
 ```
@@ -34,7 +40,7 @@ go run . \
 ### thread に投稿
 
 ```bash
-go run . \
+./discord-poke \
   --target discord-thread:1487549877373239587 \
   --message "進捗どうですか？" \
   --sender-name supervisor
@@ -43,7 +49,7 @@ go run . \
 ### dry-run
 
 ```bash
-go run . \
+./discord-poke \
   --target discord-thread:1487549877373239587 \
   --message "進捗どうですか？" \
   --dry-run
