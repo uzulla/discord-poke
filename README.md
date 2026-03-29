@@ -21,6 +21,8 @@ export DISCORD_WEBHOOK_URL="https://discord.com/api/webhooks/..."
 
 ## 使い方
 
+`-h` / `--help` では、必須環境変数 `DISCORD_WEBHOOK_URL` と target の意味、実行例も表示されます。
+
 ### channel を検証して投稿
 
 ```bash
