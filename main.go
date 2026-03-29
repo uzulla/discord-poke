@@ -72,6 +72,11 @@ func run(targetArg, message, senderName string, dryRun bool) error {
 		payload.Username = senderName
 	}
 
+	if dryRun {
+		out := successResult{Target: targetArg, DryRun: true}
+		return json.NewEncoder(os.Stdout).Encode(out)
+	}
+
 	resolvedURL, err := buildWebhookURL(webhookURL, t)
 	if err != nil {
 		return err
@@ -80,11 +85,6 @@ func run(targetArg, message, senderName string, dryRun bool) error {
 		if err := verifyWebhookChannelMatch(webhookURL, t.id); err != nil {
 			return err
 		}
-	}
-
-	if dryRun {
-		out := successResult{Target: targetArg, DryRun: true}
-		return json.NewEncoder(os.Stdout).Encode(out)
 	}
 
 	res, err := postWebhook(resolvedURL, payload)
