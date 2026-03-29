@@ -106,19 +106,22 @@ func run(targetArg, message, senderName string, dryRun bool) error {
 		DryRun: false,
 	}
 
-	if len(body) > 0 {
-		var parsed struct {
-			ID        string `json:"id"`
-			Timestamp string `json:"timestamp"`
-		}
-		if err := json.Unmarshal(body, &parsed); err == nil {
-			result.MessageID = parsed.ID
-			result.Timestamp = parsed.Timestamp
-		}
+	if len(body) == 0 {
+		return errors.New("discord webhook returned empty body despite wait=true")
 	}
-	if result.Timestamp == "" {
-		result.Timestamp = time.Now().UTC().Format(time.RFC3339)
+
+	var parsed struct {
+		ID        string `json:"id"`
+		Timestamp string `json:"timestamp"`
 	}
+	if err := json.Unmarshal(body, &parsed); err != nil {
+		return fmt.Errorf("decode webhook response: %w", err)
+	}
+	if parsed.ID == "" || parsed.Timestamp == "" {
+		return errors.New("discord webhook response missing id or timestamp")
+	}
+	result.MessageID = parsed.ID
+	result.Timestamp = parsed.Timestamp
 
 	enc := json.NewEncoder(os.Stdout)
 	enc.SetEscapeHTML(false)
