@@ -21,11 +21,11 @@ export DISCORD_WEBHOOK_URL="https://discord.com/api/webhooks/..."
 
 ## 使い方
 
-### channel に投稿
+### channel を検証して投稿
 
 ```bash
 go run . \
-  --target discord-channel:1234567890 \
+  --target discord-channel:1485530659924611102 \
   --message "hello"
 ```
 
@@ -51,9 +51,12 @@ go run . \
 
 - `discord-thread:<id>`
   - webhook URL に `?thread_id=<id>&wait=true` を付けて投稿します
+  - こちらは配送先 thread の指定として使われます
+
 - `discord-channel:<id>`
-  - webhook 自体の送信先 channel に投稿します
-  - MVP では channel id の照合まではしません
+  - **配送先 channel を切り替える指定ではありません**
+  - webhook が元々紐づいている channel が、指定した `<id>` と一致するかを検証するための指定です
+  - 一致しない場合は **失敗扱い** になり、投稿しません
 
 ## 備考
 

@@ -76,6 +76,11 @@ func run(targetArg, message, senderName string, dryRun bool) error {
 	if err != nil {
 		return err
 	}
+	if t.kind == "discord-channel" {
+		if err := verifyWebhookChannelMatch(webhookURL, t.id); err != nil {
+			return err
+		}
+	}
 
 	if dryRun {
 		out := successResult{Target: targetArg, DryRun: true}
@@ -155,6 +160,42 @@ func buildWebhookURL(raw string, t target) (string, error) {
 	}
 	u.RawQuery = q.Encode()
 	return u.String(), nil
+}
+
+func verifyWebhookChannelMatch(rawWebhookURL, expectedChannelID string) error {
+	client := &http.Client{Timeout: 10 * time.Second}
+	req, err := http.NewRequest(http.MethodGet, rawWebhookURL, nil)
+	if err != nil {
+		return fmt.Errorf("build webhook verify request: %w", err)
+	}
+
+	res, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("verify webhook channel: %w", err)
+	}
+	defer res.Body.Close()
+
+	body, err := io.ReadAll(io.LimitReader(res.Body, 16*1024))
+	if err != nil {
+		return fmt.Errorf("read webhook metadata: %w", err)
+	}
+	if res.StatusCode < 200 || res.StatusCode >= 300 {
+		return fmt.Errorf("verify webhook channel failed: %s: %s", res.Status, strings.TrimSpace(string(body)))
+	}
+
+	var meta struct {
+		ChannelID string `json:"channel_id"`
+	}
+	if err := json.Unmarshal(body, &meta); err != nil {
+		return fmt.Errorf("decode webhook metadata: %w", err)
+	}
+	if meta.ChannelID == "" {
+		return errors.New("webhook metadata missing channel_id")
+	}
+	if meta.ChannelID != expectedChannelID {
+		return fmt.Errorf("target channel mismatch: expected=%s actual=%s", expectedChannelID, meta.ChannelID)
+	}
+	return nil
 }
 
 func postWebhook(webhookURL string, payload webhookPayload) (*http.Response, error) {
